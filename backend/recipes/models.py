@@ -11,8 +11,11 @@ class Tag(models.Model):
         max_length=7,
         unique=True,
     )
-    slug = models.SlugField(verbose_name="Уникальный слаг",
-                            max_length=200, unique=True)
+    slug = models.SlugField(
+        verbose_name="Уникальный слаг",
+        max_length=200,
+        unique=True
+    )
 
     class Meta:
         ordering = ("-slug",)

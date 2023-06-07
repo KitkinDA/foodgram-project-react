@@ -3,8 +3,14 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as BaseUserViewSet
-from recipes.models import (Cart, Favourite, Follow, Ingredient, Recipe,
-                            RecipeIngredient, Tag)
+from recipes.models import (
+    Cart,
+    Favourite,
+    Follow,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
@@ -14,10 +20,14 @@ from rest_framework.response import Response
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import LimitPageNumberPagination
 from .permissions import AdminOrReadOnly, AuthorOrReadOnly
-from .serializers import (FollowSerializer, IngredientSerializer,
-                          RecipeInfoSerializer, RecipeReadSerializer,
-                          RecipeWriteUpdateSerializer, TagSerializer,
-                          UserSerializer)
+from .serializers import (
+    FollowSerializer,
+    IngredientSerializer,
+    RecipeInfoSerializer,
+    RecipeReadSerializer,
+    RecipeWriteUpdateSerializer,
+    TagSerializer,
+    UserSerializer)
 
 User = get_user_model()
 
@@ -46,29 +56,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_recipe(self, model, user, pk, message):
-        recipe = model.objects.filter(user=user, recipe__id=pk)
-        if recipe.exists():
-            recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        model.objects.filter(user=user, recipe__id=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["post", "delete"],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
         message = "избранных"
         if request.method == "POST":
             return self.add_recipe(Favourite, request.user, pk, message)
         return self.delete_recipe(Favourite, request.user, pk, message)
 
-    @action(detail=True, methods=["post", "delete"],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         message = "покупок"
         if request.method == "POST":
             return self.add_recipe(Cart, request.user, pk, message)
         return self.delete_recipe(Cart, request.user, pk, message)
 
-    @action(detail=False, methods=("get",),
-            permission_classes=(IsAuthenticated,))
+    @action(
+        detail=False,
+        methods=("get",),
+        permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         user = request.user
 
@@ -130,14 +144,16 @@ class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
     pagination_class = LimitPageNumberPagination
 
-    @action(detail=False, methods=["get"],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
         queryset = Follow.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(pages, many=True,
-                                      context={"request": request})
+        serializer = FollowSerializer(
+            pages, many=True, context={"request": request})
         return self.get_paginated_response(serializer.data)
 
 
@@ -158,14 +174,17 @@ class SubscribeViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         author, user, follow = self.get_data()
-        follow, created = Follow.objects.get_or_create(user=user,
-                                                       author=author)
+        follow, created = Follow.objects.get_or_create(
+            user=user,
+            author=author)
         if created:
             serializer = FollowSerializer(follow, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self):
         follow = self.get_data()
-        if follow.exists():
+        if follow:
             follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
