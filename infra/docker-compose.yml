@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3'
 services:
 
   db:
@@ -9,27 +9,39 @@ services:
     env_file:
       - ./.env
 
-
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: kitkinda/backend_foodgram
+    restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
-
+    depends_on:
+      - db
+    env_file:
+      - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: kitkinda/frontend_foodgram
     volumes:
       - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
+
   nginx:
-    image: nginx:1.19.3
+    image: nginx
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
       - ../docs/:/usr/share/nginx/html/api/docs/
+    depends_on:
+      - backend
+
+
+volumes:
+  static_value:
+  media_value:
+  postgres_data:
