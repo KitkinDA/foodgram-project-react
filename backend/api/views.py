@@ -172,7 +172,7 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         follow = Follow.objects.filter(user=user, author=author)
         return (author, user, follow)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         author, user, follow = self.get_data()
         follow, created = Follow.objects.get_or_create(
             user=user,
@@ -180,11 +180,9 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         if created:
             serializer = FollowSerializer(follow, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self):
-        follow = self.get_data()
-        if follow:
+    def delete(self, request, *args, **kwargs):
+        author, user, follow = self.get_data()
+        if follow.exists():
             follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
