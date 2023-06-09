@@ -20,12 +20,11 @@ SECRET_KEY = 'django-insecure-pt8^irkds-musx$3gmm&7@m#cko^*ptg=!43hkt9q^+2d6fm3#
 # SECRET_KEY = os.getenv('SECRET_KEY', default='123')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
 
-# (видео 18:40) если опять юзер не пройдёт,то удалить
 AUTH_USER_MODEL = 'users.User'
 
 
